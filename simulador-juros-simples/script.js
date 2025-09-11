@@ -43,4 +43,55 @@ const parcelas = parseInt(String(parcelasRaw).replace(',', ''),
 10);
 
 // Validações
+if (isNaN(preco) || preco <= 0) throw new Error('Informe um preço válido (>0).');
+if (isNaN(desconto) || desconto < 0) throw new Error('Desconto deve ser >= 0.');
+if (isNaN(taxa) || taxa < 0) throw new Error('Taxa deve ser >= 0.');
+if (isNaN(parcelas) || parcelas < 1) throw new Error('Número de parcelas deve ser >= 1.');
+
+// Cálculos
+const precoComDesconto = preco * (1 - desconto / 100);
+const i = taxa / 100; // taxa decimal ao mês 
+const J_total = precoComDesconto *i* parcelas; // juros simples total 
+const totalPagar = precoComDesconto + J_total;
+const valorParcela = totalPagar / parcelas;
+const economia = preco - precoComDesconto;
+
+// Exibir resultados principais
+outPrecoComDesconto.textContent = moedaBR(precoComDesconto);
+outValorParcela.textContent = moedaBR(valorParcela);
+outTotalPagar.textContent = moedaBR(totalPagar);
+outEconomia.textContent = moedaBR(economia);
+resultados.hidden = false;
+
+// Montar/garantir tbody
+let corpoTabela = document.querySelector('#tabela tbody');
+if (!corpoTabela) {
+  const tabela = document.getElementById('tabela');
+  corpoTabela = document.createElement('tbody');
+  tabela.appendChild(corpoTabela);
+}
+
+corpoTabela.innerHTML = '';
+
+const jurosMesConstante = precoComDesconto * i; // juros do mês constante 
+const amortizacaoConstante = precoComDesconto / parcelas; // amortização constante
+
+for (let mes = 1; mes <= parcelas; mes ++) {
+  // evitar pequenas diferenças de arredondamento no último mês 
+  const principalRestante = Math.max(0, precoComDesconto - amortizacaoConstante * mes);
+
+  const tr = document.createElement('tr');
+
+  const tdMes = document.createElement('td');
+  tdMes.textContent = mes;
+
+  const tdParcela = document.createElement('td');
+  tdParcela.textContent = moedaBR(valorParcela);
+
+  const tdJurosMes = document.createElement('td');
+  tdJurosMes.textContent = moedaBR(jurosMesConstante);
+
+  const tdAmortizaçao = document.createElement('td');
+  tdAmortizaçao.textContent = moedaBR(amortizacaoConstante);
+}
 }
